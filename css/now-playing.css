@@ -27,6 +27,18 @@ header {
     margin-bottom: 2em;
 }
 
+.biography {
+    text-align: left;
+    background: #000;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 12px;
+    padding: 1em 2.5em;
+    margin-bottom: 2em;
+}
+
+
 .colophon {
     color: #555;
     font-size: 12px;

@@ -1,20 +1,43 @@
 NowPlaying = function(api, user, interval) {
-    this.lastArtist = '';
-    this.lastUser = '';
-    
-    /* AutoUpdate frequency - Last.fm API rate limits at 1/sec */
     this.interval = interval || 5;
+    this.EN = nest.nest("5EYHYOVNFLJTJ1KOH");
+    this._lastTrack = "";
 };
+
 NowPlaying.prototype = {
     
     display: function()
-    {        
-        // sneaky image one-liner borrowed from TwitSpace™
-        var image = "http://ws.audioscrobbler.com/2.0/?method=artist.getimageredirect&artist=" + encodeURI(_currentComposer) + "&api_key=b25b959554ed76058ac220b7b2e0a026&size=original";
-        $('body').css("background-image", "url('" + image + "')");
-        $('#artist').html('<span class="separator">by </span> ' + _currentComposer);
-        $('#track').text(_currentTrack);
-        $('#art').attr("src",_currentAlbumArtURL);
+    {
+        if (this._lastTrack != _currentTrack+_currentComposer) {
+            // sneaky image one-liner borrowed from TwitSpace™
+            var image = "http://ws.audioscrobbler.com/2.0/?method=artist.getimageredirect&artist=" + encodeURI(_currentComposer) + "&api_key=b25b959554ed76058ac220b7b2e0a026&size=original";
+            $('body').css("background-image", "url('" + image + "')");
+            $('#artist').html('<span class="separator">by </span> ' + _currentComposer);
+            $('#track').text(_currentTrack);
+            $('#art').attr("src",_currentAlbumArtURL);
+            artist = this.EN.artist({"name":_currentComposer})
+            artist.biographies({results: 1, start: 1}, function(err, results) {
+                if (err) {
+                    return;
+                }
+                $('#bio').text(results["biographies"][0]["text"]);
+            });
+            // how does this work tyler
+            /*
+            song = this.EN.song({"title":_currentTrack,"artist":_currentComposer})
+            console.log(song);
+            if(song) {
+                song.profile({bucket:"audio_summary"}, function(err, results) {
+                    if (err) {
+                        console.log(err)
+                        return;
+                    }
+                    $('#bpm').text(results["songs"][0]["audio_summary"]["tempo"]);
+                });
+            }
+            */
+            this._lastTrack = _currentTrack+_currentComposer;
+        }
     },
     
     update: function()
