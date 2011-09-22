@@ -9,15 +9,6 @@ var _sonosIP = "192.168.1.105";
 var _sonosID = "RINCON_000E5828B42A01400";
 var _sonosName = "Office";
 
-
-    var _providers = [{ "name": "Rhapsody", "keyword": "rhapsody" },
-                      { "name": "Pandora", "keyword": "pandora" },
-                      { "name": "Local", "keyword": "x-file-cifs" },
-                      { "name": "Radio", "keyword": "aac" },
-                      { "name": "Radio", "keyword": "mms"}];
-    var _webLocation = "http://www.lostvibe.com/ImageLoader.ashx?name=/";
-    var _bingAPIKey = "B6FDB3C1D3886880F74466641F6A909C739D9AAC"; // only required if you want to do image search
-
     // Global variables that don't need to be customized to the environment.
     var _soapRequestTemplate = '<?xml version="1.0" encoding="utf-8"?><s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body>{0}</s:Body></s:Envelope>';
     var _port = ':1400';
@@ -26,99 +17,21 @@ var _sonosName = "Office";
     var _currentAlbum = "";
     var _selectedZone = 0;  // zone serving up media
     var _refreshRate = 15000; // milliseconds
-    var _debug = true;
     var _autoSetToMaster = true;
-    var _masterFound = false;
-    var _playlistsRetrieved = false;
     var _trackChange = true;
-    var _debugWindow = null;
-    var _clipboard = "";
-    var _debugConsole;
     var RequestType = { "metadata": 0, "transport": 1, "playlists": 2, "oneplaylist": 3 };
 
-    // Some general functions for the page
-    //
-
-    // Logging functionality.
-    function log(message) {
-        if (!_debug) {
-            return;
-        }
-        if (_debugWindow === null) {
-            _debugWindow = window.open("", "", "width=350,height=250,menubar=0,toolbar=1,status=0,scrollbars=1,resizable=1");
-            _debugWindow.document.writeln('<html><head><title>Console</title></head><body bgcolor=white></body></html>');
-            _debugConsole = _debugWindow.document.body;
-        }
-        _debugConsole.innerHTML += message + "<hr/>";
-    }
     // Once the DOM is loaded then we can work with HTML elements.
     jQuery(document).ready(function () {
         var zoneName = _sonosName;
         refreshCurrentlyPlaying();
-        log("Page initialized.");
         setInterval(refreshCurrentlyPlaying, _refreshRate);
         jQuery("#addthisdiv").click(function () {
         });
     });
-    // Creates zone dropdown.
-    function addOption(selectbox, text, value) {
-        var optn = document.createElement("OPTION");
-        optn.text = text;
-        optn.value = value;
-        selectbox.options.add(optn);
-    }
-
-    //
-    // The following functions represent the functionality of making requests to the
-    // UPnP devices and dealing with the response.
-    //
-
-    // Function to mute or unmote the selected zone. Action: 0 (unmute), 1 (mute)
-    function muteOrUnMute(action) {
-        var url, xml, soapBody, soapAction;
-        var host = _sonosIP + _port; 
-        url = '/MediaRenderer/RenderingControl/Control';
-        soapAction = "urn:upnp-org:serviceId:RenderingControl#SetMute";
-        soapBody = '<u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>' + action + '</DesiredMute></u:SetMute>';
-        xml = _soapRequestTemplate.replace('{0}', soapBody);
-        sendSoapRequest(url, host, xml, soapAction, RequestType.transport);
-    }
-
-    // Function to process Play, Stop, Pause, Previous and Next commands.
-    function transport(cmd) {
-        var url, xml, soapBody, soapAction;
-        var host = _sonosIP + _port; 
-        url = '/MediaRenderer/AVTransport/Control';
-        soapAction = "urn:schemas-upnp-org:service:AVTransport:1#" + cmd;
-        soapBody = '<u:' + cmd + ' xmlns:u="urn:schemas-upnp-org:service:AVTransport:1"><InstanceID>0</InstanceID><Speed>1</Speed></u:' + cmd + '>';
-        xml = _soapRequestTemplate.replace('{0}', soapBody);
-        sendSoapRequest(url, host, xml, soapAction, RequestType.transport);
-    }
-
-    // Get playlists.
-    function getPlaylists() {
-        var url, xml, soapBody, soapAction;
-        var host = _sonosIP + _port; 
-        url = '/MediaServer/ContentDirectory/Control';
-        soapAction = 'urn:schemas-upnp-org:service:ContentDirectory:1#Browse';
-        soapBody = '<u:Browse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"><ObjectID>SQ:</ObjectID><BrowseFlag>BrowseDirectChildren</BrowseFlag><Filter></Filter><StartingIndex>0</StartingIndex><RequestedCount>100</RequestedCount><SortCriteria></SortCriteria></u:Browse>';
-        xml = _soapRequestTemplate.replace('{0}', soapBody);
-        sendSoapRequest(url, host, xml, soapAction, RequestType.playlists);
-    }
-    function getPlaylist(value) {
-        var url, xml, soapBody, soapAction;
-        var host = _sonosIP + _port; 
-        url = '/MediaServer/ContentDirectory/Control';
-        soapAction = 'urn:schemas-upnp-org:service:ContentDirectory:1#Browse';
-        soapBody = '<u:Browse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"><ObjectID>' + value + '</ObjectID><BrowseFlag>BrowseDirectChildren</BrowseFlag><Filter></Filter><StartingIndex>0</StartingIndex><RequestedCount>1000</RequestedCount><SortCriteria></SortCriteria></u:Browse>';
-        xml = _soapRequestTemplate.replace('{0}', soapBody);
-        sendSoapRequest(url, host, xml, soapAction, RequestType.oneplaylist);
-    }
 
     // Refresh metadata.
     function refreshCurrentlyPlaying() {
-		log("doing that xx");
-	
         // Set some globals to default.
         _currentAlbum = _currentArtist = _currentComposer = "";
 
@@ -134,7 +47,6 @@ var _sonosName = "Office";
         soapAction = 'urn:schemas-upnp-org:service:AVTransport:1#GetPositionInfo';
         soapBody = '<u:GetPositionInfo xmlns:u="urn:schemas-upnp-org:service:AVTransport:1"><InstanceID>0</InstanceID><Channel>Master</Channel></u:GetPositionInfo>';
         xml = _soapRequestTemplate.replace('{0}', soapBody);
-		log("sending this request " + url);
         sendSoapRequest(url, host, xml, soapAction, RequestType.metadata);
         if (!_playlistsRetrieved) {
             getPlaylists();
@@ -157,91 +69,24 @@ var _sonosName = "Office";
             data: xml,
             success: function (data, status, xhr) {
                 if (requestType == RequestType.metadata) {
-					log("back from soap metadata ");
                     processSuccessfulAjaxRequestNodes_Metadata(jQuery(data).find("*"), host);
                 }
-                else if (requestType == RequestType.playlists) {
-                    processSuccessfulAjaxRequestNodes_Playlist(jQuery(data).find("*"), host);
-                }
-                else if (requestType == RequestType.oneplaylist) {
-                    processSuccessfulAjaxRequestNodes_OnePlaylist(jQuery(data).find("*"), host);
-                }
-                else if (requestType == RequestType.transport) {
-                    // If this isn't a metadata request, then we should refresh the metadata to sync UI.
-                    refreshCurrentlyPlaying();
-                }
                 var response = transport.responseText || "no response text";
-                log("Success! \n\n" + data.xml);
             },
             complete: function (xhr, status) {
                 var response = status || "no response text";
-                log("Complete \n\n" + response);
             },
             ajaxError: function (data) {
                 var response = data || "no response text";
-                log("Failure! \n\n" + response);
             },
-            error: function (xhr, status, err) { log('Exception: ' + err.message); }
+            error: function (xhr, status, err) {  }
         });
     }
 
-    function processSuccessfulAjaxRequestNodes_OnePlaylist(responseNodes, host) {
-        if (responseNodes[0].nodeName == "s:Envelope") {
-            jQuery('#PlaylistDump').html("");
-            var sb = "";
-             _clipboard = "";
-            var responseNodes2 = jQuery(responseNodes[0].text).find("item");
-			log(responseNodes2);
-            for (var i = 0; i < responseNodes2.length; i++) {
-                var track = "UNK", album = "UNK", creator = "UNK";
-                if (responseNodes2[i].getElementsByTagName("title")[0] !== undefined) {
-                    track = responseNodes2[i].getElementsByTagName("title")[0].innerText;
-                }
-                if (responseNodes2[i].getElementsByTagName("creator")[0] !== undefined) {
-                    artist = responseNodes2[i].getElementsByTagName("creator")[0].innerText;
-                }
-                if (responseNodes2[i].getElementsByTagName("album")[0] !== undefined) {
-                    album = responseNodes2[i].getElementsByTagName("album")[0].innerText;
-                }
-                if (track !== "UNK" | artist !== "UNK" | album !== "UNK") {
-                    sb += "\"" + track + "\" from <i>" + album + "</i> by " + artist + "<br/>";
-                    _clipboard += track + " | from " + album + " | by " + artist + "\n";
-                }
-            }
-            jQuery('#PlaylistDump').html(sb.toString());
-        }
-    }
 
-    function CopyToClipboard() {
-        if (window.clipboardData && clipboardData.setData) {
-            clipboardData.setData("Text", _clipboard); // IE
-        }
-        // Add more clauses to deal with other browsers
-        // e.g. http://www.dynamic-tools.net/toolbox/copyToClipboard/
-    }
-
-    function processSuccessfulAjaxRequestNodes_Playlist(responseNodes, host) {
-        if (responseNodes[0].nodeName == "s:Envelope") {
-            var responseNodes2 = jQuery(responseNodes[0].text).find("container");
-            jQuery("select[id$=PlaylistSelect] > option").remove();
-            for (var i = 0; i < responseNodes2.length; i++) {
-                var playlistName = responseNodes2[i].firstChild.innerText;
-                var playlistId = responseNodes2[i].getAttribute("id");
-                addOption(jQuery('#PlaylistSelect')[0], playlistName, playlistId);
-            }
-        }
-        else {
-            jQuery("select[id$=PlaylistSelect] > option").remove();
-            addOption(jQuery('#PlaylistSelect')[0], "Cannot get playlists.", 0);
-        }
-    }
     function processSuccessfulAjaxRequestNodes_Metadata(responseNodes, host) {
-		log("what2");
-		log(responseNodes);
-		log(responseNodes.length);
         for (var i = 0; i < responseNodes.length; i++) {
             var currNodeName = responseNodes[i].nodeName;
-			log(currNodeName);
             if (currNodeName == "TrackURI") {
                 var result = responseNodes[i].firstChild.nodeValue;
                 if (result.indexOf("x-rincon") > -1) {
@@ -253,7 +98,6 @@ var _sonosName = "Office";
                         jQuery('#CoordinatorMetadata')[0].className = "ElementVisible";
                     }
                     else {
-						log("doing that");
                         refreshCurrentlyPlaying();
                     }
                 }
@@ -265,7 +109,6 @@ var _sonosName = "Office";
                 var responseNodes2 = jQuery(responseNodes[i].firstChild.nodeValue).find("*");
                 var isStreaming = false;
                 for (var j = 0; j < responseNodes2.length; j++) {
-					log(responseNodes2[j].nodeName);
                     switch (responseNodes2[j].nodeName) {
                         case "DC:CREATOR":
                             _currentComposer = XMLEscape.unescape(responseNodes2[j].firstChild.nodeValue);
@@ -346,71 +189,6 @@ var _sonosName = "Office";
         }
     }
 
-    function getPlaylistDump() {
-        var selectedPlaylist = jQuery('#PlaylistSelect')[0].value;
-        getPlaylist(selectedPlaylist);
-    }
-    //
-    // The following functions deal with processing of additional album artwork images.
-    //
-
-    // A general image search - via Bing (requires an API key).
-    function doGeneralImageSearch() {
-        var query = (_currentArtist.length > 0) ? _currentArtist + " " + _currentAlbum : _currentComposer + " " + _currentAlbum;
-        jQuery('#AssetsSearch')[0].innerHTML = "Web search for: " + query + "<br/>";
-        jQuery.getJSON("http://api.search.live.net/json.aspx?AppId=" + _bingAPIKey + "&query=" + query + "&sources=image&count=20",
-                     function (data) {
-                         if (data.SearchResponse.Image.Total > 0) {
-                             jQuery.each(data.SearchResponse.Image.Results, function (i, item) {
-                                 jQuery("<img class='AssetImg' alt='Image from the Web'/>").attr("src", item.MediaUrl)
-                                       .appendTo("#AssetsSearch")
-                                       .wrap("<a href='" + item.Url + "' target='_blank'></a>")
-                             });
-                         }
-                     });
-    }
-
-    // Deals with button click request to check if there are additional album artwork images from Lostvibe.
-    function getLostvibeAssets() {
-        if (_currentAlbum.length > 0 && (_currentArtist.length > 0 | _currentComposer.length > 0)) {
-            var artist = unescape(_currentArtist);
-            if (artist.length === 0) {
-                artist = (unescape(_currentComposer)).toLowerCase();
-            }
-            var album = (unescape(_currentAlbum)).toLowerCase();
-            log(artist + "\\" + album);
-
-            jQuery.ajax({
-                url: "http://www.lostvibe.com/LostvibeAssetService.asmx/GetAssets",
-                type: "POST",
-                async: true,
-                data: { artist: artist, album: album },
-                success: function (data, status, xhr) {
-                    log(data.xml);
-                    jQuery('#AssetsLostvibe')[0].innerHTML = "Lostvbe search for: " + artist + " " + album + "<br/>";
-                    var nodes = jQuery(data).find("asset");
-                    if (nodes.length > 0) {
-                        for (var i = 0; i < nodes.length; i++) {
-                            var fileName = nodes[i].firstChild.nodeValue;
-                            var isThumb = nodes[i].attributes.getNamedItem('thumb').value
-                            if (isThumb === "0") {
-                                jQuery("<img class='AssetImg' alt='Lostvibe Asset'/>").attr("src", _webLocation + fileName)
-                                .appendTo("#AssetsLostvibe")
-                                .wrap("<a href='" + _webLocation + escape(fileName) + "' target='_blank'></a>");
-                            }
-                        }
-                    }
-                    else {
-                        jQuery('#AssetsLostvibe')[0].innerHTML += "<em>nothing found</em>";
-                    }
-                    jQuery("#AssetsLostvibe")[0].innerHTML += "<hr/>";
-                },
-                error: function (xhr) {
-                    log("error: " + xhr.status + ", " + xhr.responseText + ", " + xhr.statusText)
-                }
-            });
-        }
-    }
 
     //
     // Utility
@@ -466,10 +244,7 @@ table tr td { padding: 10px;}
                 <img alt="currently playing" id="albumArt" src="about:blank" width="300" height="300" style="border: solid 1px black"/>
             </td>
             <td >
-                Zone: Office yo
                 <input type="button" value="refresh" onclick="refreshCurrentlyPlaying()" /> <br />
-                <a href="#" onclick="muteOrUnMute(1)">Mute Zone</a> | <a href="#" onclick="muteOrUnMute(0)">
-        UnMute Zone</a><br /><br />
                 <div class="ElementHidden" id="TrackMetadata">
                 <span class="label">Track:</span> <span id="trackName">
                 </span></div>
@@ -482,39 +257,11 @@ table tr td { padding: 10px;}
                 <div class="ElementHidden" id="AlbumMetadata">
                 <span class="label">Album:</span> <span id="albumName">
                 </span> </div>
-                <div class="ElementHidden" id="CoordinatorMetadata">
-                <span class="label">Status:</span> <span id="coordinatorName">
-                </span></div>
-                <div class="ElementHidden" id="SourceMetadata">
-                <span class="label">Source:</span> <span id="sourceName">
-                </span></div>
-                <div class="ElementVisible" id="PlaylistDiv">
-                <span class="label">Playlists:</span>
-                <select class="blend" id="PlaylistSelect">
-                <option>Getting playlists...please wait</option>
-                </select> <input type="button" value="Get" onclick="getPlaylistDump()" />
-                <button onclick="CopyToClipboard()">Clip</button>
-                <a href="" title="First GET the playlist and then CLIP it to get it to the clipboard.">?</a>
-                </div>
-                <br />
-                <a href="javascript:transport('Previous');">Previous
-                </a> | <a href="javascript:transport('Play');">Play
-                </a> | <a href="javascript:transport('Stop');">Stop
-                </a> | <a href="javascript:transport('Pause');">Pause
-                </a> | <a href="javascript:transport('Next');">Next
-                </a> 
-                        <br /><br />
-                       <input type="button" value="Lostvibe Art?" onclick="getLostvibeAssets()" />
-                        <input type="button" value="Bing Image Search" onclick="doGeneralImageSearch()" />
-
             </td>
         </tr>
     </table>
     </div>
     </div>
-    <div id="AssetsLostvibe"></div>
-    <div id="AssetsSearch"></div>
-    <div id="PlaylistDump"></div>
 </body>
 </html>
 
