@@ -16,12 +16,23 @@ NowPlaying.prototype = {
             $('#track').text(_currentTrack);
             $('#art').attr("src",_currentAlbumArtURL);
             artist = this.EN.artist({"name":_currentComposer})
-            artist.biographies({results: 1, start: 1}, function(err, results) {
+            artist.biographies({results: 2, start: 1, license: "cc-by-sa"}, function(err, results) {
                 if (err) {
                     return;
                 }
-                $('#bio').text(results["biographies"][0]["text"]);
+                $('#bio').text(results["biographies"][0]["text"].slice(0,350)+"...");
             });
+            artist.similar({results: 10, start: 1}, function(err, results) {
+                if (err) {
+                    return;
+                }
+                var simstr = "";
+                for( i=0; i < results["artists"].length;i++) {
+                    simstr = simstr + results["artists"][i]["name"] + ", ";
+                }
+                $('#sims').text(simstr + "and MANY MORE");
+            });
+            
             // how does this work tyler
             /*
             song = this.EN.song({"title":_currentTrack,"artist":_currentComposer})

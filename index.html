@@ -10,12 +10,9 @@
     <!--[if lt IE 9]><script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
 
     <meta name="apple-mobile-web-app-capable" content="yes" />
-
     <link rel="stylesheet" href="css/now-playing.css" type="text/css" />
-
     <link rel="shortcut icon" href="images/favicon.ico" />
 	<link rel="apple-touch-icon" href="images/apple-touch-icon.png"> 
-
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
     <script src="js/now-playing.js"></script>
 	<script src="js/sonos.js"></script>
@@ -24,7 +21,6 @@
     
     <script>
         $(document).ready(function() {       
-            // Canonicalise/Persist hash
             np = new NowPlaying();
             np.autoUpdate();
         });
@@ -52,10 +48,13 @@
             </h1>
         </article>
 		<div class="biography">
-			<span id="bio">bio</span>
-		</div>
+			<span id="bio">bio</span><br/>
+			<BR/>
+		    <B>similars:</B> <span id="sims">sims</span>
+        </div>
+		
 
-		<p align='right'><img id="art" width=300 height=300 src="#" /></p>
+		<img STYLE="position:absolute; TOP:35px; LEFT:900px; WIDTH:200px; HEIGHT:200px" SRC="#" id="art" />
         
     </div>
 </body>
