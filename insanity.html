@@ -48,10 +48,6 @@ var _sonosName = "Office";
         soapBody = '<u:GetPositionInfo xmlns:u="urn:schemas-upnp-org:service:AVTransport:1"><InstanceID>0</InstanceID><Channel>Master</Channel></u:GetPositionInfo>';
         xml = _soapRequestTemplate.replace('{0}', soapBody);
         sendSoapRequest(url, host, xml, soapAction, RequestType.metadata);
-        if (!_playlistsRetrieved) {
-            getPlaylists();
-            _playlistsRetrieved = true;
-        }
     }
 
     // Main Ajax request function. uPnP requests go through here.
@@ -71,7 +67,6 @@ var _sonosName = "Office";
                 if (requestType == RequestType.metadata) {
                     processSuccessfulAjaxRequestNodes_Metadata(jQuery(data).find("*"), host);
                 }
-                var response = transport.responseText || "no response text";
             },
             complete: function (xhr, status) {
                 var response = status || "no response text";
