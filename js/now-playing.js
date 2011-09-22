@@ -1,3 +1,20 @@
+$(function() {
+    show_bio = true
+    setInterval(function() {
+        if (show_bio) {
+            $("#bio").slideUp(2000, function() {
+                $("#simswrapper").slideDown(2000)
+            });
+            show_bio = false;
+        } else {
+            $("#simswrapper").slideUp(2000, function() {
+                $("#bio").slideDown(2000);
+            })
+            show_bio = true;
+        }
+    }, 10000)
+})
+
 NowPlaying = function(api, user, interval) {
     this.interval = interval || 5;
     this.EN = nest.nest("5EYHYOVNFLJTJ1KOH");
