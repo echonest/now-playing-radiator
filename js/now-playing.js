@@ -14,6 +14,7 @@ NowPlaying.prototype = {
         $('body').css("background-image", "url('" + image + "')");
         $('#artist').html('<span class="separator">by </span> ' + _currentComposer);
         $('#track').text(_currentTrack);
+        $('#art').attr("src",_currentAlbumArtURL);
     },
     
     update: function()
