@@ -17,40 +17,20 @@
 	<link rel="apple-touch-icon" href="images/apple-touch-icon.png"> 
 
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
-    <script src="js/lastfm.js"></script>
     <script src="js/now-playing.js"></script>
+	<script src="js/sonos.js"></script>
     
     <script>
     
     (function (document) {
-        
-        var get_username = function() {
-            // format: #username, or #!/user/username, prompt fallback
-            return document.location.hash.split('/')[2] || 
-                           document.location.hash.substring(1) || 
-                           'iftfom'
-        };
-    
+
         $(document).ready(function() {        
             // Canonicalise/Persist hash
-            document.location.hash = username = get_username();
-        
-            var api = new LastfmAPI('5f134f063744307ee6f126ac2c480fab');
-
-            np = new NowPlaying(api, username);
+            np = new NowPlaying();
             np.autoUpdate();
         });
     
-        // Needs replacing with a cross browser jquery plugin
-        window.onhashchange = function(event) {
-            username = get_username();
-            if (username != np.user) {
-				np.lastUser = np.user;
-                np.user = username;
-                np.update();
-            }
-        };
-        
+     
     })(document);
     
     </script>
@@ -62,11 +42,10 @@
 
         <header>
 			<div class="colophon">
-				 By <a href="http://twitter.com/dsingleton">@dsingleton</a> on <a href="https://github.com/dsingleton/now-playing-radiator">Github</a>. Hacked to bits by <a href="http://twitter.com/dsingleton">@flaneur</a> for <a href="http://iftfom.org">IFTFOM</a>.
+				 By <a href="http://twitter.com/dsingleton">@dsingleton</a> on <a href="https://github.com/dsingleton/now-playing-radiator">Github</a>. Hacked to bits by <a href="http://twitter.com/flaneur">@flaneur</a> for <a href="http://iftfom.org">IFTFOM</a> and then <a href="http://twitter.com/bwhitman">@bwhitman</a> and <a href="http://twitter.com/tylerbw">@tylerbw</a> for the sonos for <a href="http://twitter.com/echonest">@echonest</a>
 			</div>
             <div class="header">
-				Now Playing at IFTFOM (London, UK):
-				<br><a href="#theechonest">Switch to Somerville</a>
+				Now Playing at The Echo Nest (Somerville, MA):
 			</div>
         </header>
 
@@ -76,6 +55,19 @@
                 <span id="artist"><span class="separator">by </span> Artist</span>
             </h1>
         </article>
+
+		<div class="ElementHidden" id="TrackMetadata">
+        <span class="label">Track:</span> <span id="trackName">
+        </span></div>
+        <div class="ElementHidden" id="ArtistMetadata">
+        <span class="label">Artist:</span> <span id="artistName">
+        </span> </div>
+        <div class="ElementHidden" id="ComposerMetadata">
+        <span class="label">Composer:</span> <span id="composerName">
+        </span> </div>
+        <div class="ElementHidden" id="AlbumMetadata">
+        <span class="label">Album:</span> <span id="albumName">
+        </span> </div>
 
         
     </div>

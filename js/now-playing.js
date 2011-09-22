@@ -1,6 +1,4 @@
 NowPlaying = function(api, user, interval) {
-    this.api = api;
-    this.user = user;
     this.lastArtist = '';
     this.lastUser = '';
     
@@ -14,7 +12,7 @@ NowPlaying.prototype = {
         if (track.artist == ' ') { // clear background
             $('body').css("background-image", "");
         }
-        else if (track.artist != this.lastArtist || this.lastUser != this.user) {
+        else if (track.artist != this.lastArtist ) {
             // sneaky image one-liner borrowed from TwitSpace™
             var image = "http://ws.audioscrobbler.com/2.0/?method=artist.getimageredirect&artist=" + encodeURI(track.artist) + "&api_key=b25b959554ed76058ac220b7b2e0a026&size=original";
             $('body').css("background-image", "url('" + image + "')");
@@ -31,6 +29,7 @@ NowPlaying.prototype = {
     
     update: function()
     {
+        refreshCurrentlyPlaying();
         this.api.getNowPlayingTrack(
             this.user,
             jQuery.proxy(this.handleResponse, this), 
@@ -71,17 +70,7 @@ NowPlaying.prototype = {
         else
             var status = 'Last played';
         
-        if (this.user == 'iftfom') {
-            var head = status + " at IFTFOM (London, UK):";
-            head += '<br><a href="#theechonest">Switch to Somerville</a>';
-        }
-        else if (this.user == 'theechonest') {
-            var head = status + " at Echo Nest HQ (Somerville, MA):";
-            head += '<br><a href="#iftfom">Switch to London</a>';
-        }
-        else {
-            var head = status + ":";
-        }
+        var head = status + " at Echo Nest HQ (Somerville, MA):";
         $('.header').html(head);
     }
 };
