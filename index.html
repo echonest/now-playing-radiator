@@ -21,17 +21,11 @@
 	<script src="js/sonos.js"></script>
     
     <script>
-    
-    (function (document) {
-
-        $(document).ready(function() {        
+        $(document).ready(function() {       
             // Canonicalise/Persist hash
             np = new NowPlaying();
             np.autoUpdate();
         });
-    
-     
-    })(document);
     
     </script>
 </head>
@@ -55,20 +49,6 @@
                 <span id="artist"><span class="separator">by </span> Artist</span>
             </h1>
         </article>
-
-		<div class="ElementHidden" id="TrackMetadata">
-        <span class="label">Track:</span> <span id="trackName">
-        </span></div>
-        <div class="ElementHidden" id="ArtistMetadata">
-        <span class="label">Artist:</span> <span id="artistName">
-        </span> </div>
-        <div class="ElementHidden" id="ComposerMetadata">
-        <span class="label">Composer:</span> <span id="composerName">
-        </span> </div>
-        <div class="ElementHidden" id="AlbumMetadata">
-        <span class="label">Album:</span> <span id="albumName">
-        </span> </div>
-
         
     </div>
 </body>
