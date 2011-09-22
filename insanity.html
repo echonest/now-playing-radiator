@@ -4,13 +4,11 @@
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
 <script language="javascript" type="text/javascript">
 jQuery.noConflict();
- 
- //http://192.168.1.105:1400  udn: uuid:RINCON_000E5828B42A01400
-// Global variables that need to be customized to the environment.
-var _sonosTopology = { "zones": [
-    { "name": "Office", "ip": "192.168.1.105", "id": "RINCON_000E5828B42A01400" }
-]
-};
+
+var _sonosIP = "192.168.1.105";
+var _sonosID = "RINCON_000E5828B42A01400";
+var _sonosName = "Office";
+
 
     var _providers = [{ "name": "Rhapsody", "keyword": "rhapsody" },
                       { "name": "Pandora", "keyword": "pandora" },
@@ -28,7 +26,7 @@ var _sonosTopology = { "zones": [
     var _currentAlbum = "";
     var _selectedZone = 0;  // zone serving up media
     var _refreshRate = 15000; // milliseconds
-    var _debug = false;
+    var _debug = true;
     var _autoSetToMaster = true;
     var _masterFound = false;
     var _playlistsRetrieved = false;
@@ -55,12 +53,7 @@ var _sonosTopology = { "zones": [
     }
     // Once the DOM is loaded then we can work with HTML elements.
     jQuery(document).ready(function () {
-        for (var i = 0; i < _sonosTopology.zones.length; i++) {
-            var zoneName = _sonosTopology.zones[i].name;
-            addOption(jQuery('#ZoneSelect')[0], zoneName, i);
-        }
-        jQuery('#ZoneSelect')[0].selectedIndex = 1;
-        _selectedZone = jQuery('#ZoneSelect')[0].selectedIndex;
+        var zoneName = _sonosName;
         refreshCurrentlyPlaying();
         log("Page initialized.");
         setInterval(refreshCurrentlyPlaying, _refreshRate);
@@ -83,8 +76,7 @@ var _sonosTopology = { "zones": [
     // Function to mute or unmote the selected zone. Action: 0 (unmute), 1 (mute)
     function muteOrUnMute(action) {
         var url, xml, soapBody, soapAction;
-        var _activeZone = jQuery('#ZoneSelect')[0].selectedIndex;
-        var host = _sonosTopology.zones[_activeZone].ip + _port;
+        var host = _sonosIP + _port; 
         url = '/MediaRenderer/RenderingControl/Control';
         soapAction = "urn:upnp-org:serviceId:RenderingControl#SetMute";
         soapBody = '<u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>' + action + '</DesiredMute></u:SetMute>';
@@ -95,8 +87,7 @@ var _sonosTopology = { "zones": [
     // Function to process Play, Stop, Pause, Previous and Next commands.
     function transport(cmd) {
         var url, xml, soapBody, soapAction;
-        var _activeZone = jQuery('#ZoneSelect')[0].selectedIndex;
-        var host = _sonosTopology.zones[_activeZone].ip + _port;
+        var host = _sonosIP + _port; 
         url = '/MediaRenderer/AVTransport/Control';
         soapAction = "urn:schemas-upnp-org:service:AVTransport:1#" + cmd;
         soapBody = '<u:' + cmd + ' xmlns:u="urn:schemas-upnp-org:service:AVTransport:1"><InstanceID>0</InstanceID><Speed>1</Speed></u:' + cmd + '>';
@@ -107,8 +98,7 @@ var _sonosTopology = { "zones": [
     // Get playlists.
     function getPlaylists() {
         var url, xml, soapBody, soapAction;
-        var _zoneToPullFrom = jQuery('#ZoneSelect')[0].selectedIndex;
-        var host = _sonosTopology.zones[_zoneToPullFrom].ip + _port;
+        var host = _sonosIP + _port; 
         url = '/MediaServer/ContentDirectory/Control';
         soapAction = 'urn:schemas-upnp-org:service:ContentDirectory:1#Browse';
         soapBody = '<u:Browse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"><ObjectID>SQ:</ObjectID><BrowseFlag>BrowseDirectChildren</BrowseFlag><Filter></Filter><StartingIndex>0</StartingIndex><RequestedCount>100</RequestedCount><SortCriteria></SortCriteria></u:Browse>';
@@ -117,8 +107,7 @@ var _sonosTopology = { "zones": [
     }
     function getPlaylist(value) {
         var url, xml, soapBody, soapAction;
-        var _zoneToPullFrom = jQuery('#ZoneSelect')[0].selectedIndex;
-        var host = _sonosTopology.zones[_zoneToPullFrom].ip + _port;
+        var host = _sonosIP + _port; 
         url = '/MediaServer/ContentDirectory/Control';
         soapAction = 'urn:schemas-upnp-org:service:ContentDirectory:1#Browse';
         soapBody = '<u:Browse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"><ObjectID>' + value + '</ObjectID><BrowseFlag>BrowseDirectChildren</BrowseFlag><Filter></Filter><StartingIndex>0</StartingIndex><RequestedCount>1000</RequestedCount><SortCriteria></SortCriteria></u:Browse>';
@@ -128,6 +117,8 @@ var _sonosTopology = { "zones": [
 
     // Refresh metadata.
     function refreshCurrentlyPlaying() {
+		log("doing that xx");
+	
         // Set some globals to default.
         _currentAlbum = _currentArtist = _currentComposer = "";
 
@@ -138,12 +129,12 @@ var _sonosTopology = { "zones": [
         }
 
         var url, xml, soapBody, soapAction;
-        var _zoneToPullFrom = jQuery('#ZoneSelect')[0].selectedIndex;
-        var host = _sonosTopology.zones[_zoneToPullFrom].ip + _port;
+        var host = _sonosIP + _port; 
         url = '/MediaRenderer/AVTransport/Control';
         soapAction = 'urn:schemas-upnp-org:service:AVTransport:1#GetPositionInfo';
         soapBody = '<u:GetPositionInfo xmlns:u="urn:schemas-upnp-org:service:AVTransport:1"><InstanceID>0</InstanceID><Channel>Master</Channel></u:GetPositionInfo>';
         xml = _soapRequestTemplate.replace('{0}', soapBody);
+		log("sending this request " + url);
         sendSoapRequest(url, host, xml, soapAction, RequestType.metadata);
         if (!_playlistsRetrieved) {
             getPlaylists();
@@ -166,6 +157,7 @@ var _sonosTopology = { "zones": [
             data: xml,
             success: function (data, status, xhr) {
                 if (requestType == RequestType.metadata) {
+					log("back from soap metadata ");
                     processSuccessfulAjaxRequestNodes_Metadata(jQuery(data).find("*"), host);
                 }
                 else if (requestType == RequestType.playlists) {
@@ -199,6 +191,7 @@ var _sonosTopology = { "zones": [
             var sb = "";
              _clipboard = "";
             var responseNodes2 = jQuery(responseNodes[0].text).find("item");
+			log(responseNodes2);
             for (var i = 0; i < responseNodes2.length; i++) {
                 var track = "UNK", album = "UNK", creator = "UNK";
                 if (responseNodes2[i].getElementsByTagName("title")[0] !== undefined) {
@@ -243,24 +236,24 @@ var _sonosTopology = { "zones": [
         }
     }
     function processSuccessfulAjaxRequestNodes_Metadata(responseNodes, host) {
+		log("what2");
+		log(responseNodes);
+		log(responseNodes.length);
         for (var i = 0; i < responseNodes.length; i++) {
             var currNodeName = responseNodes[i].nodeName;
+			log(currNodeName);
             if (currNodeName == "TrackURI") {
                 var result = responseNodes[i].firstChild.nodeValue;
                 if (result.indexOf("x-rincon") > -1) {
                     var master = result.split(":")[1];
                     var indx = _selectedZone;
-                    jQuery.each(_sonosTopology.zones, function (i) {
-                        if (_sonosTopology.zones[i].id == master) {
-                            indx = i;
-                        }
-                    });
+                    
                     if (!_autoSetToMaster) {
-                        jQuery('#coordinatorName')[0].innerHTML = "slaved to " + _sonosTopology.zones[indx].name;
+                        jQuery('#coordinatorName')[0].innerHTML = "slaved to " + _sonosName;
                         jQuery('#CoordinatorMetadata')[0].className = "ElementVisible";
                     }
                     else {
-                        jQuery('#ZoneSelect')[0].selectedIndex = indx;
+						log("doing that");
                         refreshCurrentlyPlaying();
                     }
                 }
@@ -272,8 +265,9 @@ var _sonosTopology = { "zones": [
                 var responseNodes2 = jQuery(responseNodes[i].firstChild.nodeValue).find("*");
                 var isStreaming = false;
                 for (var j = 0; j < responseNodes2.length; j++) {
+					log(responseNodes2[j].nodeName);
                     switch (responseNodes2[j].nodeName) {
-                        case "creator":
+                        case "DC:CREATOR":
                             _currentComposer = XMLEscape.unescape(responseNodes2[j].firstChild.nodeValue);
                             if (_currentComposer !== jQuery('#composerName')[0].innerHTML) {
                                 jQuery('#composerName')[0].innerHTML = _currentComposer;
@@ -287,7 +281,7 @@ var _sonosTopology = { "zones": [
                             }
                             jQuery('#ArtistMetadata')[0].className = "ElementVisible";
                             break;
-                        case "title":
+                        case "DC:TITLE":
                             if (!isStreaming) {
                                 _currentTrack = XMLEscape.unescape(responseNodes2[j].firstChild.nodeValue);
                                 if (_currentTrack !== jQuery('#trackName')[0].innerHTML) {
@@ -318,7 +312,7 @@ var _sonosTopology = { "zones": [
                             }
                             break;
 
-                        case "album":
+                        case "UPNP:ALBUM":
                             _currentAlbum = XMLEscape.unescape(responseNodes2[j].firstChild.nodeValue);
                             if (_currentAlbum !== jQuery('#albumName')[0].innerHTML) {
                                 jQuery('#albumName')[0].innerHTML = _currentAlbum;
@@ -337,7 +331,7 @@ var _sonosTopology = { "zones": [
                                 }
                             }
                             break;
-                        case "albumArtURI":
+                        case "UPNP:ALBUMARTURI":
                             var newPath = XMLEscape.unescape(responseNodes2[j].firstChild.nodeValue);
                             newPath = (newPath.indexOf("http:") > -1) ? newPath : "http://" + host + newPath;
                             var currPath = jQuery('#albumArt')[0].src;
@@ -472,9 +466,7 @@ table tr td { padding: 10px;}
                 <img alt="currently playing" id="albumArt" src="about:blank" width="300" height="300" style="border: solid 1px black"/>
             </td>
             <td >
-                Zone:
-                <select class="blend" id="ZoneSelect">
-                </select>
+                Zone: Office yo
                 <input type="button" value="refresh" onclick="refreshCurrentlyPlaying()" /> <br />
                 <a href="#" onclick="muteOrUnMute(1)">Mute Zone</a> | <a href="#" onclick="muteOrUnMute(0)">
         UnMute Zone</a><br /><br />
